@@ -49,24 +49,24 @@
 # MAGIC - English has 1 student, so we do not include it.
 # MAGIC - Biology has 1 student, so we do not include it.
 # MAGIC - Computer has 1 student, so we do not include it.
+# MAGIC
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Run Time: </h3> 567 ms
-# MAGIC <h3> Beats: </h3> 98.10%
+# MAGIC ### Run Time: </h3> 569 ms
+# MAGIC <h3> Beats: </h3> 23.36%
 # MAGIC <h3> Complexity: </h3>
 
 # COMMAND ----------
 
--- Select the class column from the subquery
-SELECT class
-FROM (
-    -- Select class and count the occurrences of each class, alias the count as total
-    SELECT class, COUNT(class) AS total
-    FROM Courses
-    -- Group by class to get the count for each class
-    GROUP BY class
-) a
--- Filter the results to include only classes with a count greater than 4
-WHERE total > 4
+import pandas as pd
+
+def find_classes(courses: pd.DataFrame) -> pd.DataFrame:
+    # Count the number of occurrences of each 'class' and create a new column 'count' with these values
+    courses['count'] = courses.groupby('class')['class'].transform('count')
+    # Filter the DataFrame to keep only the classes with more than 4 occurrences, select the 'class' column, and drop duplicate rows
+    courses = courses[courses['count']>4][['class']].drop_duplicates()  
+    
+    return courses
+    
