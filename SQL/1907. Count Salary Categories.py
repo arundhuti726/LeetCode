@@ -54,21 +54,48 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Run Time: </h3> 487 ms
-# MAGIC <h3> Beats: </h3> 75.75%
+# MAGIC ### Run Time: </h3> 24140 ms
+# MAGIC <h3> Beats: </h3> 43.04%
 # MAGIC <h3> Complexity: </h3> 
 # MAGIC
 
 # COMMAND ----------
 
-def count_salary_categories(accounts):
-    # Count the number of accounts with income greater than 50000
-    High = (accounts['income'] > 50000).sum()
-    # Count the number of accounts with income less than 20000
-    Low =  (accounts['income'] < 20000).sum()
-    # Count the number of accounts with income between 20000 and 50000 inclusive
-    Avg =  ((accounts['income'] <=50000) & (accounts['income'] >=20000)).sum()
-    
-    # Create a DataFrame with the results
-    results = spark.createDataFrame([('Low Salary', Low), ('Average Salary', Avg), ('High Salary', High)], ['category', 'accounts_count'])
-    return results
+/* Write your T-SQL query statement below */
+with Low as
+(
+    select account_id,
+    case when income < 20000 then 'Low Salary' end as category       
+    from Accounts
+    where income < 20000
+),
+High as
+(
+    select account_id,
+    case when income > 50000 then 'High Salary' end as category       
+    from Accounts
+    where income > 50000
+),
+Avg as
+(
+    select account_id,
+    case when income >= 20000 and income <= 50000 then 'Average Salary' end as category       
+    from Accounts
+    where income >= 20000 and income <= 50000
+),
+UN as
+(
+    select category, count(account_id) as accounts_count from Low group by category
+    union 
+    select category, count(account_id) as accounts_count from High group by category
+    union 
+    select category, count(account_id) as accounts_count from Avg group by category
+    union
+    select 'Low Salary' as category, 0 as accounts_count
+    union
+    select 'High Salary' as category, 0 as accounts_count
+    union
+    select 'Average Salary' as category, 0 as accounts_count
+)
+select category, max(accounts_count) as accounts_count from UN
+group by category
