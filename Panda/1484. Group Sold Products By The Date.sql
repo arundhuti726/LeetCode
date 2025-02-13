@@ -55,30 +55,26 @@
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ### Run Time: </h3> 1532 ms
--- MAGIC <h3> Beats: </h3> 79.59%
--- MAGIC <h3> Complexity: </h3> O(N log N)
+-- MAGIC ### Run Time: </h3> 543 ms
+-- MAGIC <h3> Beats: </h3> 63.46%
+-- MAGIC <h3> Complexity: </h3>
 
 -- COMMAND ----------
 
---Process 1
-/* Select the sell_date and count of products sold */
-select sell_date, count(product) as num_sold, 
-       /* Concatenate product names, ordered by product */
-       string_agg(product, ',') within group (order by product) as products
-from 
-       /* Select distinct records from Activities */
-       (select distinct * from Activities) a
-group by sell_date
-/* Order results by sell_date and concatenated products */
-order by sell_date, products
+import pandas as pd
 
--- COMMAND ----------
+def categorize_products(activities: pd.DataFrame) -> pd.DataFrame:
 
---Process 2
+    # Drop duplicate rows based on 'sell_date' and 'product', then sort by 'sell_date' and 'product'
+    activities = activities.drop_duplicates(subset=['sell_date', 'product']).sort_values(['sell_date', 'product'])
 
-with temp as (SELECT sell_date, product from Activities
-GROUP BY sell_date, product)
-SELECT sell_date, count(*) as num_sold, string_agg(product,',') as products  
-FROM temp
-GROUP BY sell_date
+    # Add a column 'num_sold' with the count of products sold per 'sell_date'
+    activities['num_sold'] = activities.groupby(['sell_date'])['sell_date'].transform('size')
+    
+    # Group by 'sell_date' and aggregate the products into a comma-separated string and get the first 'num_sold' value
+    activities = activities.groupby(['sell_date']).agg(
+    products=('product', lambda x: ','.join(x)),
+    num_sold=('num_sold', 'first')
+    ).reset_index()
+
+    return activities[['sell_date', 'num_sold', 'products']]

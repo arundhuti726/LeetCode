@@ -1,0 +1,87 @@
+-- Databricks notebook source
+-- MAGIC %md
+-- MAGIC <h5> ROBLEM DESCRIPTION </h5>
+-- MAGIC DailySales
+-- MAGIC
+-- MAGIC +-------------+---------+
+-- MAGIC | Column Name | Type    |
+-- MAGIC +-------------+---------+
+-- MAGIC | date_id     | date    |
+-- MAGIC | make_name   | varchar |
+-- MAGIC | lead_id     | int     |
+-- MAGIC | partner_id  | int     |
+-- MAGIC +-------------+---------+
+-- MAGIC There is no primary key (column with unique values) for this table. It may contain duplicates.
+-- MAGIC This table contains the date and the name of the product sold and the IDs of the lead and partner it was sold to.
+-- MAGIC The name consists of only lowercase English letters.
+-- MAGIC  
+-- MAGIC
+-- MAGIC For each date_id and make_name, find the number of distinct lead_id's and distinct partner_id's.
+-- MAGIC
+-- MAGIC Return the result table in any order.
+-- MAGIC
+-- MAGIC The result format is in the following example.
+-- MAGIC
+-- MAGIC  
+-- MAGIC
+-- MAGIC Example 1:
+-- MAGIC
+-- MAGIC Input: 
+-- MAGIC DailySales table:
+-- MAGIC +-----------+-----------+---------+------------+
+-- MAGIC | date_id   | make_name | lead_id | partner_id |
+-- MAGIC +-----------+-----------+---------+------------+
+-- MAGIC | 2020-12-8 | toyota    | 0       | 1          |
+-- MAGIC | 2020-12-8 | toyota    | 1       | 0          |
+-- MAGIC | 2020-12-8 | toyota    | 1       | 2          |
+-- MAGIC | 2020-12-7 | toyota    | 0       | 2          |
+-- MAGIC | 2020-12-7 | toyota    | 0       | 1          |
+-- MAGIC | 2020-12-8 | honda     | 1       | 2          |
+-- MAGIC | 2020-12-8 | honda     | 2       | 1          |
+-- MAGIC | 2020-12-7 | honda     | 0       | 1          |
+-- MAGIC | 2020-12-7 | honda     | 1       | 2          |
+-- MAGIC | 2020-12-7 | honda     | 2       | 1          |
+-- MAGIC +-----------+-----------+---------+------------+
+-- MAGIC Output: 
+-- MAGIC +-----------+-----------+--------------+-----------------+
+-- MAGIC | date_id   | make_name | unique_leads | unique_partners |
+-- MAGIC +-----------+-----------+--------------+-----------------+
+-- MAGIC | 2020-12-8 | toyota    | 2            | 3               |
+-- MAGIC | 2020-12-7 | toyota    | 1            | 2               |
+-- MAGIC | 2020-12-8 | honda     | 2            | 2               |
+-- MAGIC | 2020-12-7 | honda     | 3            | 2               |
+-- MAGIC +-----------+-----------+--------------+-----------------+
+-- MAGIC Explanation: 
+-- MAGIC For 2020-12-8, toyota gets leads = [0, 1] and partners = [0, 1, 2] while honda gets leads = [1, 2] and partners = [1, 2].
+-- MAGIC For 2020-12-7, toyota gets leads = [0] and partners = [1, 2] while honda gets leads = [0, 1, 2] and partners = [1, 2].
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ### Run Time: </h3> 478 ms
+-- MAGIC <h3> Beats: </h3> 82.12%
+-- MAGIC <h3> Complexity: </h3> 
+
+-- COMMAND ----------
+
+-- MAGIC %python
+-- MAGIC import pandas as pd
+-- MAGIC
+-- MAGIC def daily_leads_and_partners(daily_sales: pd.DataFrame) -> pd.DataFrame:
+-- MAGIC     # Remove duplicate rows from the DataFrame
+-- MAGIC     daily_sales = daily_sales.drop_duplicates()
+-- MAGIC
+-- MAGIC     # Calculate the number of unique leads for each combination of date_id and make_name
+-- MAGIC     daily_sales['unique_leads'] = daily_sales.groupby(['date_id', 'make_name'])['lead_id'].transform('nunique')
+-- MAGIC     
+-- MAGIC     # Calculate the number of unique partners for each combination of date_id and make_name
+-- MAGIC     daily_sales['unique_partners'] = daily_sales.groupby(['date_id', 'make_name'])['partner_id'].transform('nunique')
+-- MAGIC
+-- MAGIC     # Select relevant columns and remove duplicate rows
+-- MAGIC     results = daily_sales[['date_id', 'make_name', 'unique_leads', 'unique_partners']].drop_duplicates()
+-- MAGIC     return results
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC [LINK: ROWS BETWEEN in SQL ](https://learnsql.com/blog/sql-window-functions-rows-clause/)
