@@ -52,3 +52,28 @@
 #         return res 
 
 
+
+# COMMAND ----------
+
+class Solution:
+    def asteroidCollision(self, asteroids: List[int]) -> List[int]:
+        res = []  # Initialize an empty list to store the result
+        c = 0  
+        for asteroid in asteroids:  # Iterate through each asteroid in the input list
+            c = c + 1  
+            print('count=', c, 'asteroid =', asteroid, 'res =', res)  
+            while res and asteroid < 0 < res[-1]:  # Check if there is a collision
+                print('inside While:: res =', res, 'asteroid =', asteroid, 'res[-1]=', res[-1])  
+                
+                if res[-1] < -asteroid:  # If the last asteroid in the result list is smaller than the current asteroid
+                    res.pop()  # Remove the last asteroid from the result list
+                    continue  # Continue to the next iteration of the while loop
+                elif res[-1] == -asteroid:  # If the last asteroid in the result list is equal to the current asteroid
+                    print('inside elif:: res =', res, 'asteroid =', asteroid, 'res[-1]=', res[-1])  
+                    res.pop()  # Remove the last asteroid from the result list
+                break  # Break out of the while loop
+            else:  # If no collision occurs
+                res.append(asteroid)  # Add the current asteroid to the result list
+                print('res =', res)  
+        
+        return res  # Return the final result list
